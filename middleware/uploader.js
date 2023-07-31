@@ -2,28 +2,34 @@ const multer = require("multer");
 const path = require("path");
 
 const storage = multer.diskStorage({
-  destination: "images/",
+  destination: (req, file, cb) => {
+    cb(null, "uploads/");
+  },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + "-" + file.originalname);
+    const fileExtension = path.extname(file.originalname).toLowerCase();
+    cb(null, file.fieldname + "-" + uniqueSuffix + fileExtension);
   },
 });
 
+const fileFilter = (req, file, cb) => {
+  const allowedExtensions = [".jpg", ".jpeg", ".png", ".webp", ".svg"];
+
+  const fileExtension = path.extname(file.originalname).toLowerCase();
+  if (allowedExtensions.includes(fileExtension)) {
+    cb(null, true);
+  } else {
+    cb(
+      new Error(
+        "Unsupported file type. Only jpg, png, webp, and svg files are allowed."
+      )
+    );
+  }
+};
+
 const uploader = multer({
   storage,
-  fileFilter: (req, file, cb) => {
-    const supportedImage = /png|jpg|webp|svg/;
-    const extension = path.extname(file.originalname);
-
-    if (supportedImage.test(extension)) {
-      cb(null, true);
-    } else {
-      cb(new Error("Must be a png/jpg image"));
-    }
-  },
-  limits: {
-    fileSize: 5000000,
-  },
+  fileFilter: fileFilter,
 });
 
 module.exports = uploader;
