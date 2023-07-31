@@ -2,9 +2,16 @@ const express = require("express");
 const cors = require("cors");
 const multer = require("multer");
 
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    
+  }
+})
+
 const uploader = multer({
   dest: "uploads/",
 });
+
 
 const app = express();
 app.use(express.json());
